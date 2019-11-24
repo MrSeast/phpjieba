@@ -26,7 +26,11 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_jieba.h"
+#ifdef PHP_WIN32
+#include <string.h>
+#elif defined(__GNUC__)
 #include <unistd.h>
+#endif
 
 ZEND_DECLARE_MODULE_GLOBALS(jieba)
 
@@ -86,6 +90,15 @@ ZEND_GET_MODULE(jieba)
 static int jieba_init()
 {
 	int not_change = 1;
+	size_t jz_dict_path_len = 0;
+	char dict_path[BUFSIZE];
+	char dict_hmm_path[BUFSIZE];
+	char user_dict_path[BUFSIZE];
+	char idf_path[BUFSIZE];
+	char stop_words_path[BUFSIZE];
+#ifdef ZTS
+	TSRMLS_FETCH();
+#endif
 	if (JIEBA_G(enable) != INI_INT("jieba.enable")) {
 		JIEBA_G(enable) = (zend_bool)INI_INT("jieba.enable");
 		not_change = 0;
@@ -103,13 +116,7 @@ static int jieba_init()
 		return FAILURE;
 	}
 
-	size_t jz_dict_path_len = strlen(JIEBA_G(dict_path));
-
-	char dict_path[BUFSIZE];
-	char dict_hmm_path[BUFSIZE];
-	char user_dict_path[BUFSIZE];
-	char idf_path[BUFSIZE];
-	char stop_words_path[BUFSIZE];
+	jz_dict_path_len = strlen(JIEBA_G(dict_path));
 
 	memcpy(dict_path, JIEBA_G(dict_path), jz_dict_path_len);
 	memcpy(dict_hmm_path, JIEBA_G(dict_path), jz_dict_path_len);
@@ -169,6 +176,9 @@ static int jieba_init()
 
 static void jieba_deinit()
 {
+#ifdef ZTS
+	TSRMLS_FETCH();
+#endif
 	if (JIEBA_G(jieba) != NULL) {
 		FreeJieba(JIEBA_G(jieba));
 		JIEBA_G(jieba) = NULL;
@@ -264,10 +274,18 @@ PHP_FUNCTION(jieba)
 	long limit = 50;
 #endif
 
+	CJiebaWord *words;
+	CJiebaWord *x;
+	zval arr;
+
+	int total = 0;
+	int index = 0;
+	int next_index = 0;
+
 	jieba_init();
 
 	if (JIEBA_G(enable) == 0) {
-		php_error_docref(NULL, E_WARNING, "phpjieba not enable in your php.ini");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "phpjieba not enable in your php.ini");
 		RETURN_FALSE;
 	}
 
@@ -278,10 +296,6 @@ PHP_FUNCTION(jieba)
 		|| limit <= 0) {
 		RETURN_FALSE;
 	}
-
-	CJiebaWord *words;
-	CJiebaWord *x;
-	zval arr;
 
 	array_init(return_value);
 	switch (action) {
@@ -297,7 +311,6 @@ PHP_FUNCTION(jieba)
 		break;
 	}
 
-	int total = 0, index = 0, next_index;
 	for (x = words; x && x->word; x++) {
 		total++;
 	}

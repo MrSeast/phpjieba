@@ -1,0 +1,14 @@
+// $Id$
+// vim:ft=javascript
+
+ARG_ENABLE("jieba", "jieba support", "yes");
+
+if (PHP_JIEBA != 'no') {
+	if (CHECK_HEADER_ADD_INCLUDE("jieba.h", "CFLAGS_JIEBA", configure_module_dirname + "/cjieba/include;" + PHP_JIEBA)) {
+		EXTENSION("jieba", "jieba.c", null, "/I" + configure_module_dirname + "/cjieba/deps");
+		ADD_SOURCES(configure_module_dirname + "/cjieba/include", "jieba.cpp", "jieba");
+	}
+	else {
+		WARNING("jieba not enabled; libraries and headers not found");
+	}
+}
