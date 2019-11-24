@@ -1,3 +1,39 @@
+### windows下编译dll
+以编译php-5.6.40 x86为例，如果是要x64，则有x86的地方改为x64即可
+1. 下载本phpjieba源码
+2. 下载php源码：https://github.com/php/php-src.git/tags/php-5.6.40
+3. 下载php sdk：https://windows.php.net/downloads/php-sdk/
+
+   a) php-sdk-binary-tools-20110915.zip
+   
+   b) archives/deps-5.6-vc11-x86_2018-12.7z
+4. 下载安装VS2012
+5. 找个地方创建php_sdk目录，将php-sdk-binary-tools-20110915.zip解压到该目录下
+6. 打开Developer Command Prompt for VS2012命令行窗口，进入php_sdk目录，如果是编译x64，这里需要打开x64的命令行窗口
+7. 运行脚本创建编译目录
+```
+bin\phpsdk_buildtree.bat phpdev
+```
+8. 创建目录phpdev\vc11\x86，将deps-5.6-vc11-x86_2018-12.7z解压到该目录下
+9. 创建目录phpdev\vc11\x86\php-5.6.40-src，将php源码导入到该目录下
+10. 创建目录phpdev\vc11\x86\php-5.6.40-src\ext\jieba，将phpjieba源码导入到该目录下
+11. 创建目录phpdev\vc11\x86\obj，作为编译输出目录
+12. 开始编译
+```
+bin\phpsdk_setvars.bat
+cd phpdev\vc11\x86\php-5.6.40-src
+buildconf
+configure --disable-all --enable-cli --enable-zts --enable-jieba=shared --enable-object-out-dir=..\obj
+nmake
+```
+13. 编译完成后就可以在obj目录下找到php_jieba.dll，将其拷贝到你的网站php\ext目录下
+14. 编辑php.ini文件，添加以下配置，然后启动网站就可以用了
+```
+extension=php_jieba.dll
+jieba.enable=1
+jieba.dict_path="C:\phpjieba\cjieba\dict" ;修改为你自己的路径
+```
+
 
 ### version 0.0.6
 * 加载字典缘故嫌慢的同学可以考虑使用  https://github.com/jonnywang/goredisjieba
