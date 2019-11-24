@@ -2,7 +2,9 @@
 #define CJIEBA_C_API_H
 
 #include <stdlib.h>
+#ifdef __GNUC__
 #include <stdbool.h>
+#endif
 
 typedef void* Jieba;
 Jieba NewJieba(const char* dict_path,
@@ -25,7 +27,7 @@ CJiebaWord* CutWithoutTagName(Jieba handle, const char*, size_t, const char*);
 
 void FreeWords(CJiebaWord* words);
 
-bool JiebaInsertUserWord(Jieba handle, const char* word);
+int JiebaInsertUserWord(Jieba handle, const char* word);
 
 typedef void* Extractor;
 Extractor NewExtractor(const char* dict_path,

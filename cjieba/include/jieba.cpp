@@ -133,7 +133,7 @@ void FreeWords(CJiebaWord* words) {
 	free(words);
 }
 
-bool JiebaInsertUserWord(Jieba handle, const char* word) {
+int JiebaInsertUserWord(Jieba handle, const char* word) {
 	cppjieba::Jieba* x = (cppjieba::Jieba*) handle;
 	return x->InsertUserWord(string(word), "u");
 }
